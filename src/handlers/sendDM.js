@@ -6,10 +6,22 @@ module.exports = async (req, res) => {
   console.log(users, body);
 
   const postRequest = users.map(user => {
-    return web.chat.postMessage({
-      channel: user,
-      text: body,
-      as_user: true,
+    return new Promise((resolve, reject) => {
+      web.chat.postMessage({
+        channel: user,
+        text: body,
+        as_user: true,
+      })
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((error) => {
+          if ('ok' in error.data) {
+            resolve(error.data);
+          } else {
+            reject(error);
+          }
+        });
     });
   })
 

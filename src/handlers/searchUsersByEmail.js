@@ -5,8 +5,20 @@ module.exports = async (req, res) => {
   const emails = email.split(',');
 
   const searchRequest = emails.map(email => {
-    return web.users.lookupByEmail({ email });
-  })
+    return new Promise((resolve, reject) => {
+      web.users.lookupByEmail({ email })
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((error) => {
+          if ('ok' in error.data) {
+            resolve(error.data);
+          } else {
+            reject(error);
+          }
+        });
+    });
+  });
 
   const slackResults = await Promise.all(searchRequest);
 
