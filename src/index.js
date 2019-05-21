@@ -10,6 +10,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
+app.use('/web', express.static(__dirname + '/static'));
 app.get('/api/searchUsersByEmail', searchUsersByEmail);
 app.post('/api/sendDM', sendDM);
 

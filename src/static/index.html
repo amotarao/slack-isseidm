@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>iisei DM</title>
+</head>
+<body>
+
+  <div id="app">
+    <h1>Hoge World!</h1>
+
+    <h2>対象のメールアドレスを入力</h2>
+    <p>複数人いる場合、改行してね</p>
+    <form @submit.prevent="searchUsersByEmail">
+      <textarea cols="60" rows="10" required v-model="emailsArea"></textarea>
+      <button type="submit">検索</button>
+    </form>
+    <table v-if="emailsResults.length">
+      <tr v-for="(result, i) in emailsResults" :key="i">
+        <td>{{ result.email }}</td>
+        <td>{{ result.user }}</td>
+        <td>
+          <p v-if="result.ok">正常</p>
+          <p v-else>ユーザーが見つかりませんでした</p>
+        </td>
+      </tr>
+    </table>
+
+    <h2>対象ユーザーIDを入力</h2>
+    <p>複数人いる場合、改行してね</p>
+    <form @submit.prevent="sendDM">
+      <label>
+        <p>ID (複数人いる場合、改行してね)</p>
+        <textarea cols="60" rows="10" required v-model="idsArea"></textarea>
+      </label>
+      <label>
+        <p>本文</p>
+        <textarea cols="60" rows="10" required v-model="body"></textarea>
+      </label>
+      <button type="submit">送信</button>
+    </form>
+    <table v-if="dmResults.length">
+      <tr v-for="(result, i) in dmResults" :key="i">
+        <td>{{ result.user }}</td>
+        <td>
+          <p v-if="result.ok">正常</p>
+          <p v-else>ユーザーが見つかりませんでした</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+const app = new Vue({
+  el: '#app',
+  data() {
+    return {
+      emailsArea: '',
+      emailsResults: [],
+      idsArea: '',
+      body: '',
+      dmResults: [],
+    }
+  },
+  methods: {
+    async searchUsersByEmail() {
+      const emails = this.emailsArea.split('\n').filter(email => email).join(',');
+      const { data: { results } } = await axios.get(`/api/searchUsersByEmail?email=${emails}`);
+      this.emailsResults = [...results];
+      this.idsArea = results.map(result => result.id).filter(id => id).join('\n');
+    },
+    async sendDM() {
+      const ids = this.idsArea.split('\n').filter(id => id);
+      const { data: { results } } = await axios.post('/api/sendDM', {
+        users: ids,
+        body: this.body,
+      });
+      this.dmResults = [...results];
+    }
+  },
+});
+</script>
+
+</body>
+</html>
