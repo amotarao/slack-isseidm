@@ -3,8 +3,6 @@ const { web } = require('../modules/slack');
 module.exports = async (req, res) => {
   const { users, body } = req.body;
 
-  console.log(users, body);
-
   const postRequest = users.map(user => {
     return new Promise((resolve, reject) => {
       web.chat.postMessage({
